@@ -1,0 +1,33 @@
+spring:
+  jpa:
+    show-sql: false
+    
+  security:
+    user:
+      password: secret
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: 22d94292734f5bdd495e
+            client-secret: 09d15f0b0b37b0be11ddb2bd6897f2cb76214d30
+          google:
+            client-id: 592478762979-m9jq555btrtq30hvdbn7h9uc8evarbd7.apps.googleusercontent.com
+            client-secret: bI3VLaBK3Jx3jSwZNNiuiswN
+            
+logging:
+  level:
+    org.springframework.security: DEBUG
+  
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+        
+        
+appli:
+  jwt:
+    validity: 120000
+    secretKey: secret
+    
