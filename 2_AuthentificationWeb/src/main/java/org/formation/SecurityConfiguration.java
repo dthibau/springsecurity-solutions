@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
@@ -52,14 +53,11 @@ public class SecurityConfiguration {
 	
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf().disable().authorizeHttpRequests().antMatchers("/fournisseurs*").hasRole("MANAGER")
-				.antMatchers("/produits*").hasAnyRole("PRODUCT_MANAGER", "MANAGER")
-				.antMatchers("/swagger-ui.html", "/swagger-resources/**", "/v2/api-docs/**").permitAll()
-				.antMatchers("/actuator/**").permitAll().anyRequest().authenticated()
-				.and().formLogin().and().sessionManagement().maximumSessions(2).and().and().logout()
-				.invalidateHttpSession(true).logoutSuccessUrl("http://www.plb.fr");
+		http.requestMatcher(new RegexRequestMatcher("^((?!/api).)*$", null))
+						.authorizeRequests()			
+						.anyRequest()
+						.authenticated().and().oauth2Login().and().formLogin();
 		
-
 		return http.build();
 	}
 	@Bean
