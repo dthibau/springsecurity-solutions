@@ -3,6 +3,7 @@ package org.formation;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,29 +16,31 @@ public class SecurityConfiguration {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-	    http.authorizeHttpRequests().anyRequest().authenticated()
-	      .and()
-	      .formLogin()
-	      .and()
-	      .sessionManagement().maximumSessions(2)
-	      .and().and()
-	      .logout()
-	      .invalidateHttpSession(true)
-	      .logoutSuccessUrl("http://www.plb.fr");
-	    
-	    return http.build();
+		http.authorizeHttpRequests().antMatchers("/fournisseurs*").hasRole("MANAGER").antMatchers("/produits*")
+				.hasAnyRole("PRODUCT_MANAGER", "MANAGER")
+				.antMatchers("/swagger-ui.html", "/swagger-resources/**", "/v2/api-docs/**").permitAll()
+				.antMatchers("/api/*").permitAll().antMatchers("/actuator/**").permitAll().anyRequest().authenticated()
+				.and().formLogin().and().sessionManagement().maximumSessions(2).and().and().logout()
+				.invalidateHttpSession(true).logoutSuccessUrl("http://www.plb.fr");
+
+		return http.build();
 	}
-	
+
+	@Bean
+	public WebSecurityCustomizer webSecurityCustomizer() {
+		return (web) -> web.ignoring().antMatchers("/resources/**", "/publics/**","/webjars/*");
+	}
+
 	@Bean
 	public SessionRegistry sessionRegistry() {
-		    return new SessionRegistryImpl();
+		return new SessionRegistryImpl();
 	}
-	
+
 	@Bean
 	public HttpSessionEventPublisher httpSessionEventPublisher() {
-	    return new HttpSessionEventPublisher();
+		return new HttpSessionEventPublisher();
 	}
-	
+
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
