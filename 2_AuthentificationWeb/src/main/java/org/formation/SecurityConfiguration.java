@@ -5,6 +5,7 @@ import java.util.Locale;
 import org.formation.jwt.JWTFilter;
 import org.formation.jwt.TokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.audit.InMemoryAuditEventRepository;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,39 +32,27 @@ public class SecurityConfiguration {
 
 	@Autowired
 	TokenProvider tokenProvider;
-	
+
 	@Bean
 	@Order(1)
 	public SecurityFilterChain restFilterChain(HttpSecurity http) throws Exception {
-		http.antMatcher("/api/**")
-			.authorizeHttpRequests()
-			.antMatchers("/api/authenticate").permitAll()
-			.anyRequest().authenticated()
-			.and()
-				.sessionManagement()
-		        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-		        .and()
-		        .addFilterBefore(new JWTFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
-		        .csrf()
-		        .disable();
-		
+		http.antMatcher("/api/**").authorizeHttpRequests().antMatchers("/api/authenticate").permitAll().anyRequest()
+				.authenticated().and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+				.addFilterBefore(new JWTFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class).csrf()
+				.disable();
 
 		return http.build();
 	}
-	
+
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.requestMatcher(new RegexRequestMatcher("^((?!/api).)*$", null))
-						.csrf().disable()
-						.authorizeRequests()			
-						.anyRequest().authenticated()
-						.and().formLogin().loginPage("/oauth_login")
-						.and().oauth2Login().loginPage("/oauth_login").permitAll().defaultSuccessUrl("/loginSuccess")
-						.and().logout();
+		http.requestMatcher(new RegexRequestMatcher("^((?!/api).)*$", null)).csrf().disable().authorizeRequests()
+				.anyRequest().authenticated().and().formLogin().loginPage("/oauth_login").and().oauth2Login()
+				.loginPage("/oauth_login").permitAll().defaultSuccessUrl("/loginSuccess").and().logout();
 
-		
 		return http.build();
 	}
+
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() {
 		return (web) -> web.ignoring().antMatchers("/resources/**", "/publics/**", "/webjars/*");
@@ -75,6 +64,11 @@ public class SecurityConfiguration {
 	}
 
 	@Bean
+	public InMemoryAuditEventRepository repository() {
+		return new InMemoryAuditEventRepository();
+	}
+
+	@Bean
 	public HttpSessionEventPublisher httpSessionEventPublisher() {
 		return new HttpSessionEventPublisher();
 	}
@@ -83,10 +77,13 @@ public class SecurityConfiguration {
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
+
 	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-	    return authenticationConfiguration.getAuthenticationManager();
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+			throws Exception {
+		return authenticationConfiguration.getAuthenticationManager();
 	}
+
 	@Bean
 	public MessageSource messageSource() {
 		Locale.setDefault(Locale.FRENCH);
