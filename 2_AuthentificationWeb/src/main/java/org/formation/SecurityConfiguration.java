@@ -54,9 +54,13 @@ public class SecurityConfiguration {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.requestMatcher(new RegexRequestMatcher("^((?!/api).)*$", null))
+						.csrf().disable()
 						.authorizeRequests()			
-						.anyRequest()
-						.authenticated().and().oauth2Login().and().formLogin();
+						.anyRequest().authenticated()
+						.and().formLogin().loginPage("/oauth_login")
+						.and().oauth2Login().loginPage("/oauth_login").permitAll().defaultSuccessUrl("/")
+						.and().logout();
+
 		
 		return http.build();
 	}
