@@ -2,6 +2,7 @@ package org.formation;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.session.SessionRegistry;
@@ -12,11 +13,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
+@EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfiguration {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.authorizeHttpRequests().antMatchers("/fournisseurs*").hasRole("MANAGER").antMatchers("/produits*")
+		http.csrf().disable().authorizeHttpRequests().antMatchers("/fournisseurs*").hasRole("MANAGER").antMatchers("/produits*")
 				.hasAnyRole("PRODUCT_MANAGER", "MANAGER")
 				.antMatchers("/swagger-ui.html", "/swagger-resources/**", "/v2/api-docs/**").permitAll()
 				.antMatchers("/api/*").permitAll().antMatchers("/actuator/**").permitAll().anyRequest().authenticated()
