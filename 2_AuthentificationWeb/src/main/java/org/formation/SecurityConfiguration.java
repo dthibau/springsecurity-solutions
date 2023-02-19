@@ -1,7 +1,11 @@
 package org.formation;
 
+import java.util.Locale;
+
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -18,8 +22,8 @@ public class SecurityConfiguration {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf().disable().authorizeHttpRequests().antMatchers("/fournisseurs*").hasRole("MANAGER").antMatchers("/produits*")
-				.hasAnyRole("PRODUCT_MANAGER", "MANAGER")
+		http.csrf().disable().authorizeHttpRequests().antMatchers("/fournisseurs*").hasRole("MANAGER")
+				.antMatchers("/produits*").hasAnyRole("PRODUCT_MANAGER", "MANAGER")
 				.antMatchers("/swagger-ui.html", "/swagger-resources/**", "/v2/api-docs/**").permitAll()
 				.antMatchers("/api/*").permitAll().antMatchers("/actuator/**").permitAll().anyRequest().authenticated()
 				.and().formLogin().and().sessionManagement().maximumSessions(2).and().and().logout()
@@ -30,7 +34,7 @@ public class SecurityConfiguration {
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() {
-		return (web) -> web.ignoring().antMatchers("/resources/**", "/publics/**","/webjars/*");
+		return (web) -> web.ignoring().antMatchers("/resources/**", "/publics/**", "/webjars/*");
 	}
 
 	@Bean
@@ -46,5 +50,13 @@ public class SecurityConfiguration {
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public MessageSource messageSource() {
+		Locale.setDefault(Locale.FRENCH);
+		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+		messageSource.addBasenames("classpath:org/springframework/security/messages");
+		return messageSource;
 	}
 }
